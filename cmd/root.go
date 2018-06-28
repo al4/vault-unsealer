@@ -17,6 +17,7 @@ const cfgSecretThreshold = "secret-threshold"
 
 const cfgMode = "mode"
 const cfgModeValueAWSKMSSSM = "aws-kms-ssm"
+const cfgModeValueAWSKMSParamFile = "aws-kms-param-file"
 const cfgModeValueGoogleCloudKMSGCS = "google-cloud-kms-gcs"
 
 const cfgGoogleCloudKMSProject = "google-cloud-kms-project"
@@ -29,6 +30,7 @@ const cfgGoogleCloudStoragePrefix = "google-cloud-storage-prefix"
 
 const cfgAWSKMSKeyID = "aws-kms-key-id"
 const cfgAWSSSMKeyPrefix = "aws-ssm-key-prefix"
+const cfgEnvFileName = "param-filename"
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -75,7 +77,7 @@ func init() {
 	configStringVar(
 		cfgMode,
 		cfgModeValueGoogleCloudKMSGCS,
-		fmt.Sprintf("Select the mode to use '%s' => Google Cloud Storage with encryption using Google KMS; '%s' => AWS SSM parameter store using AWS KMS encryption", cfgModeValueGoogleCloudKMSGCS, cfgModeValueAWSKMSSSM),
+		fmt.Sprintf("Select the mode to use '%s' => Google Cloud Storage with encryption using Google KMS; '%s' => AWS SSM parameter store using AWS KMS encryption; '%s' => Parameter File with AWS KMS encryption", cfgModeValueGoogleCloudKMSGCS, cfgModeValueAWSKMSSSM, cfgModeValueAWSKMSParamFile),
 	)
 
 	// Secret config
@@ -97,5 +99,8 @@ func init() {
 
 	// AWS SSM Parameter Storage flags
 	configStringVar("aws-ssm-key-prefix", "", "The Key Prefix for SSM Parameter store")
+
+	// Env file Parameter storage flags
+	configStringVar("param-filename", "", "The file name where the encrypted unseal keys are located")
 
 }

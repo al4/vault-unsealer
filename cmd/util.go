@@ -70,5 +70,19 @@ func kvStoreForConfig(cfg *viper.Viper) (kv.Service, error) {
 		return kms, nil
 	}
 
+	if cfg.GetString(cfgMode) == cfgModeValueAWSKMSParamFile {
+		envf, err := env_file.New(cfg.GetString(cfgEnvFileName))
+		if err != nil {
+			return nil, fmt.Errorf("error creating Env file kv store: %s", err.Error())
+		}
+
+		kms, err := aws_kms.New(envf, cfg.GetString(cfgAWSKMSKeyID))
+		if err != nil {
+			return nil, fmt.Errorf("error creating AWS KMS ID kv store: %s", err.Error())
+		}
+
+		return kms, nil
+	}
+
 	return nil, fmt.Errorf("Unsupported backend mode: '%s'", cfg.GetString(cfgMode))
 }
