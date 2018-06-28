@@ -1,3 +1,8 @@
+GOOS ?= $(uname -s)
+GOARCH ?= amd64
+export GOOS
+export GOARCH
+
 GO_PKG = gitlab.jetstack.net/jetstack/vault-unsealer
 
 REGISTRY := quay.io/jetstack
@@ -24,55 +29,26 @@ help:
 
 all: verify build docker_build
 
-build: go_build
-
 verify: go_verify
 
 .builder_image:
 	docker pull ${BUILD_IMAGE_NAME}
-
-# Builder image targets
-#######################
-docker_%: .builder_image
-	docker run -it \
-		-v ${GOPATH}/src:/go/src \
-		-v $(shell pwd):/go/src/${GO_PKG} \
-		-w /go/src/${GO_PKG} \
-		-e GOPATH=/go \
-		${BUILD_IMAGE_NAME} \
-		/bin/sh -c "make $*"
-
-# Docker targets
-################
-docker_build:
-	docker build -t $(REGISTRY)/$(IMAGE_NAME):$(BUILD_TAG) .
-
-docker_push: docker_build
-	set -e; \
-		for tag in $(IMAGE_TAGS); do \
-		docker tag $(REGISTRY)/$(IMAGE_NAME):$(BUILD_TAG) $(REGISTRY)/$(IMAGE_NAME):$${tag} ; \
-		docker push $(REGISTRY)/$(IMAGE_NAME):$${tag}; \
-	done
 
 test: go_test
 # Go targets
 #################
 go_verify: go_fmt go_vet go_test
 
-go_build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w -X main.version=$(CI_COMMIT_TAG) -X main.commit=$(CI_COMMIT_SHA) -X main.date=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)' -o vault-unsealer_linux_amd64
+clean:
+	go clean
+
+get:
+	go get -t .
+
+## Build a statically linked binary using a Docker container
+BUILD_APP_PATH = /gopath/src/github.com/starlingbank/$(shell basename $(shell pwd))
+build: clean get
+	docker run --rm -t -v "$(GOPATH)":/gopath -v "$(shell pwd)":"$(BUILD_APP_PATH)" -e "GOPATH=/gopath" -w $(BUILD_APP_PATH) golang:1.9.2-alpine3.7 sh -c 'CGO_ENABLED=0 go build -a -tags -netgo --installsuffix cgo --ldflags="-s -w" -o vault-unsealer'
 
 go_test:
 	go test $$(go list ./... | grep -v '/vendor/')
-
-go_fmt:
-	@set -e; \
-	GO_FMT=$$(git ls-files *.go | grep -v 'vendor/' | xargs gofmt -d); \
-	if [ -n "$${GO_FMT}" ] ; then \
-		echo "Please run go fmt"; \
-		echo "$$GO_FMT"; \
-		exit 1; \
-	fi
-
-go_vet:
-	go vet $$(go list ./... | grep -v '/vendor/')
