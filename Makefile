@@ -52,3 +52,23 @@ build: clean get
 
 go_test:
 	go test $$(go list ./... | grep -v '/vendor/')
+
+docker: build
+	docker build -t quay.io/starlingbank/vault-unsealer:$(BUILD_NUMBER) .
+	docker build -t quay.io/starlingbank/vault-unsealer:latest .
+
+ifneq ($(findstring SNAPSHOT, $(BUILD_NUMBER)), SNAPSHOT)
+  ifeq ($(shell git rev-parse --abbrev-ref HEAD), master)
+publish: docker
+	docker push quay.io/starlingbank/talebearer:latest
+	docker push quay.io/starlingbank/talebearer:$(BUILD_NUMBER)
+  else
+publish:
+	$(warning skipping target "publish", not on master branch)
+  endif
+else
+publish:
+	$(error the target "publish" requires that BUILD_NUMBER be set)
+endif
+
+.PHONY: install, build, docker, test, publish
