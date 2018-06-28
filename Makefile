@@ -54,6 +54,7 @@ docker_push: docker_build
 		docker push $(REGISTRY)/$(IMAGE_NAME):$${tag}; \
 	done
 
+test: go_test
 # Go targets
 #################
 go_verify: go_fmt go_vet go_test
