@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/vault/api"
 	"github.com/sirupsen/logrus"
 
-	"github.com/jetstack/vault-unsealer/pkg/kv"
+	"github.com/starlingbank/vault-unsealer/pkg/kv"
 )
 
 // That configures the vault API

@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/jetstack/vault-unsealer/pkg/vault"
+	"github.com/starlingbank/vault-unsealer/pkg/vault"
 )
 
 const cfgInitRootToken = "init-root-token"

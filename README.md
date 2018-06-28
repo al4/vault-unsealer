@@ -44,8 +44,8 @@ Use "vault-unsealer [command] --help" for more information about a command.
 ## Build from source
 
 ```bash
-go get github.com/jetstack/vault-unsealer
-make -C $(go env GOPATH)/src/github.com/jetstack/vault-unsealer build
+go get github.com/starlingbank/vault-unsealer
+make -C $(go env GOPATH)/src/github.com/starlingbank/vault-unsealer build
 ```
 
 ## Build a Docker image

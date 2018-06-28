@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/vault/api"
-	"github.com/jetstack/vault-unsealer/pkg/vault"
+	"github.com/starlingbank/vault-unsealer/pkg/vault"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
