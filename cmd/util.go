@@ -5,13 +5,13 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/jetstack/vault-unsealer/pkg/kv"
-	"github.com/jetstack/vault-unsealer/pkg/kv/aws_kms"
-	"github.com/jetstack/vault-unsealer/pkg/kv/aws_ssm"
-	"github.com/jetstack/vault-unsealer/pkg/kv/cloudkms"
-	"github.com/jetstack/vault-unsealer/pkg/kv/gcs"
-
-	"github.com/jetstack/vault-unsealer/pkg/vault"
+	"github.com/starlingbank/vault-unsealer/pkg/kv"
+	"github.com/starlingbank/vault-unsealer/pkg/kv/aws_kms"
+	"github.com/starlingbank/vault-unsealer/pkg/kv/aws_ssm"
+	"github.com/starlingbank/vault-unsealer/pkg/kv/env_file"
+	"github.com/starlingbank/vault-unsealer/pkg/kv/cloudkms"
+	"github.com/starlingbank/vault-unsealer/pkg/kv/gcs"
+	"github.com/starlingbank/vault-unsealer/pkg/vault"
 )
 
 func vaultConfigForConfig(cfg *viper.Viper) (vault.Config, error) {
@@ -63,6 +63,20 @@ func kvStoreForConfig(cfg *viper.Viper) (kv.Service, error) {
 		}
 
 		kms, err := aws_kms.New(ssm, cfg.GetString(cfgAWSKMSKeyID))
+		if err != nil {
+			return nil, fmt.Errorf("error creating AWS KMS ID kv store: %s", err.Error())
+		}
+
+		return kms, nil
+	}
+
+	if cfg.GetString(cfgMode) == cfgModeValueAWSKMSParamFile {
+		envf, err := env_file.New(cfg.GetString(cfgEnvFileName))
+		if err != nil {
+			return nil, fmt.Errorf("error creating Env file kv store: %s", err.Error())
+		}
+
+		kms, err := aws_kms.New(envf, cfg.GetString(cfgAWSKMSKeyID))
 		if err != nil {
 			return nil, fmt.Errorf("error creating AWS KMS ID kv store: %s", err.Error())
 		}
