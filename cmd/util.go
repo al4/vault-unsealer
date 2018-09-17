@@ -11,6 +11,7 @@ import (
 	"github.com/starlingbank/vault-unsealer/pkg/kv/env_file"
 	"github.com/starlingbank/vault-unsealer/pkg/kv/cloudkms"
 	"github.com/starlingbank/vault-unsealer/pkg/kv/gcs"
+	"github.com/starlingbank/vault-unsealer/pkg/kv/local"
 	"github.com/starlingbank/vault-unsealer/pkg/vault"
 )
 
@@ -31,7 +32,8 @@ func vaultConfigForConfig(cfg *viper.Viper) (vault.Config, error) {
 
 func kvStoreForConfig(cfg *viper.Viper) (kv.Service, error) {
 
-	if cfg.GetString(cfgMode) == cfgModeValueGoogleCloudKMSGCS {
+	switch cfg.GetString(cfgMode) {
+	case cfgModeValueGoogleCloudKMSGCS:
 
 		g, err := gcs.New(
 			cfg.GetString(cfgGoogleCloudStorageBucket),
@@ -54,9 +56,8 @@ func kvStoreForConfig(cfg *viper.Viper) (kv.Service, error) {
 		}
 
 		return kms, nil
-	}
 
-	if cfg.GetString(cfgMode) == cfgModeValueAWSKMSSSM {
+	case cfgModeValueAWSKMSSSM:
 		ssm, err := aws_ssm.New(cfg.GetString(cfgAWSSSMKeyPrefix))
 		if err != nil {
 			return nil, fmt.Errorf("error creating AWS SSM kv store: %s", err.Error())
@@ -68,9 +69,11 @@ func kvStoreForConfig(cfg *viper.Viper) (kv.Service, error) {
 		}
 
 		return kms, nil
-	}
 
-	if cfg.GetString(cfgMode) == cfgModeValueAWSKMSParamFile {
+	case cfgModeValueLocal:
+		return local.New(cfg.GetString(cfgLocalKeyDir))
+
+	case cfgModeValueAWSKMSParamFile:
 		envf, err := env_file.New(cfg.GetString(cfgEnvFileName))
 		if err != nil {
 			return nil, fmt.Errorf("error creating Env file kv store: %s", err.Error())
@@ -82,7 +85,8 @@ func kvStoreForConfig(cfg *viper.Viper) (kv.Service, error) {
 		}
 
 		return kms, nil
-	}
 
-	return nil, fmt.Errorf("Unsupported backend mode: '%s'", cfg.GetString(cfgMode))
+	default:
+		return nil, fmt.Errorf("Unsupported backend mode: '%s'", cfg.GetString(cfgMode))
+	}
 }

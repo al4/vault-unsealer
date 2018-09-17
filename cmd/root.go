@@ -19,6 +19,7 @@ const cfgMode = "mode"
 const cfgModeValueAWSKMSSSM = "aws-kms-ssm"
 const cfgModeValueAWSKMSParamFile = "aws-kms-param-file"
 const cfgModeValueGoogleCloudKMSGCS = "google-cloud-kms-gcs"
+const cfgModeValueLocal = "local"
 
 const cfgGoogleCloudKMSProject = "google-cloud-kms-project"
 const cfgGoogleCloudKMSLocation = "google-cloud-kms-location"
@@ -32,6 +33,8 @@ const cfgAWSKMSKeyID = "aws-kms-key-id"
 const cfgAWSSSMKeyPrefix = "aws-ssm-key-prefix"
 const cfgEnvFileName = "param-filename"
 
+const cfgLocalKeyDir = "local-key-dir"
+
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "vault-unsealer",
@@ -40,7 +43,7 @@ var RootCmd = &cobra.Command{
 Hashicorp Vault.
 
 It will continuously attempt to unseal the target Vault instance, by retrieving
-unseal keys from a Google Cloud KMS keyring.
+unseal keys from a Google Cloud, AWS KMS keyring or local in path
 `,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
@@ -77,7 +80,7 @@ func init() {
 	configStringVar(
 		cfgMode,
 		cfgModeValueGoogleCloudKMSGCS,
-		fmt.Sprintf("Select the mode to use '%s' => Google Cloud Storage with encryption using Google KMS; '%s' => AWS SSM parameter store using AWS KMS encryption; '%s' => Parameter File with AWS KMS encryption", cfgModeValueGoogleCloudKMSGCS, cfgModeValueAWSKMSSSM, cfgModeValueAWSKMSParamFile),
+		fmt.Sprintf("Select the mode to use '%s' => Google Cloud Storage with encryption using Google KMS; '%s' => AWS SSM parameter store using AWS KMS encryption; %s => Use local keys in path, '%s' => Parameter File with AWS KMS encryption", cfgModeValueGoogleCloudKMSGCS, cfgModeValueAWSKMSSSM, cfgModeValueLocal, cfgModeValueAWSKMSParamFile),
 	)
 
 	// Secret config
@@ -99,6 +102,8 @@ func init() {
 
 	// AWS SSM Parameter Storage flags
 	configStringVar("aws-ssm-key-prefix", "", "The Key Prefix for SSM Parameter store")
+
+	configStringVar("local-key-dir", "", "Directory of key shares in path")
 
 	// Env file Parameter storage flags
 	configStringVar("param-filename", "", "The file name where the encrypted unseal keys are located")
