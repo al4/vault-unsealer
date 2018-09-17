@@ -48,7 +48,7 @@ get:
 ## Build a statically linked binary using a Docker container
 BUILD_APP_PATH = /gopath/src/github.com/starlingbank/$(shell basename $(shell pwd))
 build: clean get
-	docker run --rm -t -v "$(GOPATH)":/gopath -v "$(shell pwd)":"$(BUILD_APP_PATH)" -e "GOPATH=/gopath" -w $(BUILD_APP_PATH) golang:1.9.2-alpine3.7 sh -c 'CGO_ENABLED=0 go build -a -tags -netgo --installsuffix cgo --ldflags="-s -w" -o vault-unsealer'
+	docker run --rm -t -v "$(GOPATH)":/gopath -v "$(shell pwd)":"$(BUILD_APP_PATH)" -e "GOPATH=/gopath" -w $(BUILD_APP_PATH) golang:1.10.4-alpine3.8 sh -c 'CGO_ENABLED=0 go build -a -tags -netgo --installsuffix cgo --ldflags="-s -w" -o vault-unsealer'
 
 go_test:
 	go test $$(go list ./... | grep -v '/vendor/')
